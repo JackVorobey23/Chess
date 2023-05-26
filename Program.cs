@@ -1,6 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ChessDataBase>((db) => db.UseInMemoryDatabase("Chess"));
+
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAllHeaders", 
     builder => 
