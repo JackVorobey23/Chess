@@ -1,8 +1,8 @@
-interface IPieceBlockingStrategy
+public interface IPieceBlockingStrategy
 {
     bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board);
 }
-class PawnIsNotBlockingStrategy : IPieceBlockingStrategy
+public class PawnIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
@@ -31,7 +31,7 @@ class PawnIsNotBlockingStrategy : IPieceBlockingStrategy
         }
     }
 }
-class KnightIsNotBlockingStrategy : IPieceBlockingStrategy
+public class KnightIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
@@ -42,7 +42,7 @@ class KnightIsNotBlockingStrategy : IPieceBlockingStrategy
         return true;
     }
 }
-class RookIsNotBlockingStrategy : IPieceBlockingStrategy
+public class RookIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
@@ -86,7 +86,7 @@ class RookIsNotBlockingStrategy : IPieceBlockingStrategy
         return true;
     }
 }
-class BishopIsNotBlockingStrategy : IPieceBlockingStrategy
+public class BishopIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
@@ -116,7 +116,7 @@ class BishopIsNotBlockingStrategy : IPieceBlockingStrategy
         return true;
     }
 }
-class QueenIsNotBlockingStrategy : IPieceBlockingStrategy
+public class QueenIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
@@ -130,7 +130,7 @@ class QueenIsNotBlockingStrategy : IPieceBlockingStrategy
         }
     }
 }
-class KingIsNotBlockingStrategy : IPieceBlockingStrategy
+public class KingIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
