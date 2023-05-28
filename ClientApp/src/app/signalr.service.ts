@@ -24,14 +24,19 @@ export class SignalRService {
         .catch(e => console.log(`damn!\n${e}`))
     }
 
-    askServer() {
-        this.hubConnection?.invoke("askServer", "hey")
+    askServer(text: string) {
+        this.hubConnection?.invoke("AskServer", text)
             .catch(e => console.log(e));
     }
 
     askServerListener() {
-        this.hubConnection?.on("askServerResponse", responseText => {
+        this.hubConnection?.on("askResponse", responseText => {
             console.log(responseText);
         })
+    }
+
+    addWaiter(playerName: string){
+        this.hubConnection?.invoke("AddWaiter", playerName)
+            .catch(e => console.log(e));
     }
 }

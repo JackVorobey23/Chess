@@ -6,6 +6,9 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ChessDataBase>((db) => db.UseInMemoryDatabase("Chess"));
 
+builder.Services.AddScoped<IRepository<Player>, Repository<Player>>();
+builder.Services.AddScoped<IRepository<Game>, Repository<Game>>();
+
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAllHeaders", 
     builder => 
