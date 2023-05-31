@@ -1,11 +1,17 @@
 import { ThisReceiver } from "@angular/compiler";
 import { Injectable } from "@angular/core"; 
 import * as signalR from "@aspnet/signalr";
+import { Observable, Subject } from "rxjs";
+
+import {GameDataService} from "./game-data.service";
 
 @Injectable({providedIn: 'root'})
 export class SignalRService {
-    constructor () {}
-
+    constructor (
+        public gameDataService: GameDataService
+    ) {}
+    
+    
     hubConnection?:signalR.HubConnection;
 
     startConnection = () => {
@@ -35,8 +41,14 @@ export class SignalRService {
         })
     }
 
-    addWaiter(playerName: string){
-        this.hubConnection?.invoke("AddWaiter", playerName)
+    gameStartListener() {
+        this.hubConnection?.on("gameStartListener", responseText => {
+            this.gameDataService.newGameDataSubject.next(responseText);
+        })
+    }
+
+    addWaiter(playerName: string, playerId: number){
+        this.hubConnection?.invoke("AddWaiter", playerName, playerId)
             .catch(e => console.log(e));
     }
 }

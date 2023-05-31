@@ -1,22 +1,27 @@
 import { Component } from '@angular/core';
 import { SignalRService } from './signalr.service';
+import { GameDataService } from './game-data.service';
+import GameDto from 'src/Interfaces/GameDto';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html'
 })
 export class AppComponent {
-  inputText: string | undefined;
+  myEventSubscription: any;
   constructor(
-    public SignalRService: SignalRService
-  ){}
-  
+    public SignalRService: SignalRService,
+    public gameDataService: GameDataService
+  ) { }
+
+
   ngOnInit() {
+    
     this.SignalRService.startConnection();
+
     this.SignalRService.askServerListener();
+
+    this.SignalRService.gameStartListener();
   };
   title = 'app';
-  sendData() {
-    this.SignalRService.askServer(this.inputText!);
-  }
 }

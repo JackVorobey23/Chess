@@ -3,21 +3,26 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+import { HomeComponent } from "./home/home.component";
+import { GameComponent } from "./game/game.component";
+import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
-//import { HomeComponent } from './home/home.component';
 
 @NgModule({
   declarations: [
-    AppComponent
-    //HomeComponent
+    AppComponent,
+    HomeComponent,
+    GameComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
+    AppRoutingModule,
     FormsModule,
     RouterModule.forRoot([
-      //{ path: '', component: HomeComponent, pathMatch: 'full' },
+      { path: 'home', component: HomeComponent, pathMatch: 'full' },
+      { path: 'game', component: GameComponent, pathMatch: 'full' },
     ])
   ],
   providers: [],

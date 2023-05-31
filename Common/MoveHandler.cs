@@ -1,4 +1,4 @@
-public abstract class MoveHandler
+public abstract class MoveHandler : ISubject
 {
     protected MoveHandler _nextHandler;
 
@@ -18,19 +18,10 @@ public abstract class MoveHandler
             return true;
         }
     }
-}
-public class MovePossibilityHandler : MoveHandler
-{
-    public override bool HandleMove(Piece piece, string move)
+
+    public virtual void Request(Piece piece, string move) 
     {
-        if (true)
-        {
-            return base.HandleMove(piece, move);
-        }
-        else
-        {
-            return false;
-        }
+        HandleMove(piece, move);
     }
 }
 public class BlockingPieceHandler : MoveHandler
@@ -46,6 +37,11 @@ public class BlockingPieceHandler : MoveHandler
             return false;
         }
     }
+
+    public override void Request(Piece piece, string move)
+    {
+        base.Request(piece, move);
+    }
 }
 public class KingSafetyHandler : MoveHandler
 {
@@ -60,5 +56,10 @@ public class KingSafetyHandler : MoveHandler
             // Move hangs the king, return false
             return false;
         }
+    }
+
+    public override void Request(Piece piece, string move)
+    {
+        base.Request(piece, move);
     }
 }

@@ -11,4 +11,8 @@ public class Game
         WhitePlayerId = whitePlayerId;
         BlackPlayerId = blackPlayerId;
     }
+    public void MakeMove(string move)
+    {
+        
+    }
 }

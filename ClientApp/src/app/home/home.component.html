@@ -1,0 +1,21 @@
+<div>
+    ChessApp
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <div>
+      <div>
+        <div>Login: {{ userData.displayLogin }}</div>
+        <button (click)="generateLogin()">Generate Login</button>
+      </div><br>
+      <input [(ngModel)]="userData.inputText" placeholder="Send text to all Users!">
+      <button (click)="sendData()" [disabled]="!userData.loginExist">Send</button><br><br>
+      <button (click)="waitForGame()" [disabled]="!userData.loginExist">Wait for game</button>
+    </div>
+    <div>
+      All Players Chat:
+      <div >
+
+      </div>
+    </div>
+  </div>
