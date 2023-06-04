@@ -1,28 +1,38 @@
 public interface ISubject
 {
-    void Request(Piece piece, string move);
+    bool MoveAllowedRequest(Piece piece, string move);
 }
 class MoveAllowed : ISubject
 {
-    public MoveAllowed(BlockingStrategyFactory factory, List<Piece> board)
+    public MoveAllowed(List<Piece> board, BlockingStrategyFactory factory, ChecksCollection checksCollection)
     {
         _factory = factory;
-
+        _board = board;
+        _checksCollection = checksCollection;
     }
     private MoveHandler _moveHandler;
     protected BlockingStrategyFactory _factory;
+    protected ChecksCollection _checksCollection;
     protected List<Piece> _board;
 
-    public void Request(Piece piece, string move)
+    public bool MoveAllowedRequest(Piece piece, string move)
     {
-        if (CheckAccess())
+        if (CheckAccess(piece, move))
         {
-            _moveHandler = new BlockingPieceHandler(_factory, _board);
-            _moveHandler.SetNextHandler(new KingSafetyHandler(_factory, _board));
-            _moveHandler.Request(piece, move);
+            _moveHandler = new BlockingPieceHandler(_board, _factory);
+            
+            _moveHandler.SetNextHandler(new KingSafetyHandler(_board, _checksCollection));
+           
+            
+            return _moveHandler.HandleMove(piece, move);
+        }
+        else 
+        {
+            System.Console.WriteLine($"{piece.PieceName.ToString()} cannot move this way");
+            return false;
         }
     }
-    public bool CheckAccess()
+    private bool CheckAccess(Piece piece, string move)
     {
         #warning Proxy: Checking access prior to firing a real request.
 

@@ -1,11 +1,9 @@
 public abstract class MoveHandler : ISubject
 {
-    public MoveHandler(BlockingStrategyFactory factory, List<Piece> board)
+    public MoveHandler(List<Piece> board)
     {
-        _factory = factory;
         _board = board;
     }
-    protected BlockingStrategyFactory _factory;
     protected MoveHandler _nextHandler;
     protected List<Piece> _board;
 
@@ -26,19 +24,23 @@ public abstract class MoveHandler : ISubject
         }
     }
 
-    public virtual void Request(Piece piece, string move)
+    public virtual bool MoveAllowedRequest(Piece piece, string move)
     {
-        HandleMove(piece, move);
+        return HandleMove(piece, move);
     }
 }
 public class BlockingPieceHandler : MoveHandler
 {
-    public BlockingPieceHandler(BlockingStrategyFactory factory, List<Piece> board) : base(factory, board) { }
+    private BlockingStrategyFactory _factory;
+    public BlockingPieceHandler(List<Piece> board, BlockingStrategyFactory factory) : base(board)
+    {
+        _factory = factory;
+    }
     public override bool HandleMove(Piece piece, string move)
     {
         if (_factory[piece.PieceName].PieceIsNotBlocking(piece, move, _board))
         {
-            return base.HandleMove(piece, move);
+            return _nextHandler.HandleMove(piece, move);
         }
         else
         {
@@ -46,29 +48,42 @@ public class BlockingPieceHandler : MoveHandler
         }
     }
 
-    public override void Request(Piece piece, string move)
+    public override bool MoveAllowedRequest(Piece piece, string move)
     {
-        base.Request(piece, move);
+        return base.MoveAllowedRequest(piece, move);
     }
 }
 public class KingSafetyHandler : MoveHandler
 {
-    public KingSafetyHandler(BlockingStrategyFactory factory, List<Piece> board) : base(factory, board) { }
+    private ChecksCollection _collection;
+    public KingSafetyHandler(List<Piece> board, ChecksCollection collection) : base(board)
+    {
+        _collection = collection;
+    }
     public override bool HandleMove(Piece piece, string move)
     {
-        if (new Random().Next(0,5) > 2)
+        using (var a = _collection.GetEnumerator())
         {
-            return base.HandleMove(piece, move);
+            while (a.MoveNext())
+            {
+                if (a.Current.Invoke(_board, piece.PieceColor) is not null)
+                {
+                    return false;
+                }
+            }
+        }
+        if (_nextHandler is not null)
+        {
+            return _nextHandler.HandleMove(piece, move);
         }
         else
         {
-            // Move hangs the king, return false
             return false;
         }
     }
 
-    public override void Request(Piece piece, string move)
+    public override bool MoveAllowedRequest(Piece piece, string move)
     {
-        base.Request(piece, move);
+        return base.MoveAllowedRequest(piece, move);
     }
 }

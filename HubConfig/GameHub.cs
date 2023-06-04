@@ -3,15 +3,21 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 class GameHub : Hub
 {
-    public GameHub(IRepository<Player> playerRepositpry, IRepository<Game> gameRepository, BlockingStrategyFactory factory)
+    public GameHub
+        (IRepository<Player> playerRepositpry,
+        IRepository<Game> gameRepository,
+        BlockingStrategyFactory factory,
+        ChecksCollection checksCollection)
     {
         _playerRepository = playerRepositpry;
         _gameRepository = gameRepository;
         _factory = factory;
+        _checksCollection = checksCollection;
     }
     private IRepository<Player> _playerRepository;
     private IRepository<Game> _gameRepository;
     private BlockingStrategyFactory _factory;
+    private ChecksCollection _checksCollection;
     public async Task AskServer(string text)
     {
         await Clients.All.SendAsync("askResponse", "Server response: \n" + text);
@@ -44,7 +50,7 @@ class GameHub : Hub
 
             Game newGame = new Game(gameDto.GameId, gameDto.BPieceUserId, gameDto.WPieceUserId);
             newGame.Board = newBoard;
-            
+
             await _gameRepository.Add(newGame);
 
             await AskServer("congratulations!");
@@ -67,11 +73,22 @@ class GameHub : Hub
 
         List<Piece> board = (await _gameRepository.FindById(gameId)).Board;
 
-        MoveAllowed moveAllowed = new MoveAllowed(_factory, board);
-        
+        Piece movingPiece = board.Find(p => p.PiecePosition == Move.Split('-')[0]);
+        string moveTo = Move.Split('-')[1];
 
-        await Clients.All.SendAsync("newMove",
-            JsonSerializer.Serialize(new MoveDto(gameId, Move)));
+        bool moveAllowed = new MoveAllowed(board, _factory, 
+            new ChecksCollection(board, movingPiece.PieceColor == PieceColor.White ? PieceColor.Black : PieceColor.White))
+            .MoveAllowedRequest(movingPiece, moveTo);
+
+        if (moveAllowed)
+        {
+            await Clients.All.SendAsync("newMove",
+                JsonSerializer.Serialize(new MoveDto(gameId, Move)));
+        }
+        else
+        {
+            await Clients.All.SendAsync("moveWrong", gameId);
+        }
     }
     public async Task EndGame(int gameId, int LoserId)
     {

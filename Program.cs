@@ -22,8 +22,6 @@ builder.Services.AddSingleton<BlockingStrategyFactory>(_ => {
     return factory;
 });
 
-
-
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAllHeaders", 
     builder => 

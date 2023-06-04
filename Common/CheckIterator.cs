@@ -2,15 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-// Define the ChessIterator class
-public class ChessIterator : IEnumerator<Func<List<Piece>, PieceColor, Piece>>
+public class CheckIterator : IEnumerator<Func<List<Piece>, PieceColor, Piece>>
 {
     private readonly List<Piece> _board;
     private readonly PieceColor _kingColor;
     private int currentIndex;
     private readonly List<Func<List<Piece>, PieceColor, Piece>> checkFunctions;
 
-    public ChessIterator(List<Piece> board, PieceColor kingColor)
+    public CheckIterator(List<Piece> board, PieceColor kingColor)
     {
         _board = board;
         _kingColor = kingColor;
@@ -43,23 +42,23 @@ public class ChessIterator : IEnumerator<Func<List<Piece>, PieceColor, Piece>>
     }
 }
 
-public class ChessCheckIterator : IEnumerable<Func<List<Piece>, PieceColor, Piece>>
+public class ChecksCollection : IEnumerable<Func<List<Piece>, PieceColor, Piece>>
 {
     private readonly List<Piece> _board;
     private readonly PieceColor _kingColor;
 
-    public ChessCheckIterator(List<Piece> board, PieceColor kingColor)
+    public ChecksCollection(List<Piece> board, PieceColor kingColor)
     {
         _board = board;
     }
 
     public IEnumerator<Func<List<Piece>, PieceColor, Piece>> GetEnumerator()
     {
-        ChessIterator iterator = new ChessIterator(_board, _kingColor);
+        CheckIterator iterator = new CheckIterator(_board, _kingColor);
         
-        iterator.AddCheckFunction((board, kingColor) => IsKingUnderDiagonalCheck(board, kingColor));
-        iterator.AddCheckFunction((board, kingColor) => IsKingUnderLineCheck(board, kingColor));
-        iterator.AddCheckFunction((board, kingColor) => IsKingUnderKnightCheck(board, kingColor));
+        iterator.AddCheckFunction((board, kingColor) => new GetDiagonalCheck().IsKingUnderCheck(board, kingColor));
+        iterator.AddCheckFunction((board, kingColor) => new GetLineCheck().IsKingUnderCheck(board, kingColor));
+        iterator.AddCheckFunction((board, kingColor) => new GetKnightCheck().IsKingUnderCheck(board, kingColor));
 
         return iterator;
     }
