@@ -1,0 +1,23 @@
+<div *ngIf="currentGameExist">
+    <div>
+        You are in game lobby!<br>
+        Game id: {{userData.currentGameId}}<br>
+        Pieces: {{userData.currentUserPieceColor}}
+    </div>
+    <button (click)="endGame()">End Game (Resign)</button>
+    <div class="main-container">
+        <div id="board" *ngIf="reload">
+            <app-piece class="cell" [item]="a" *ngFor="let a of this.cycleForBoard">
+                
+            </app-piece>
+        </div>
+    </div>
+    <div>
+        <input type="text" placeholder="e4-e5" #moveInput>
+        <button [disabled]="!this.currentUserMove" (click)="makeMove(moveInput.value)">Make move</button>
+    </div>
+</div>
+<div class="gameNotExist" *ngIf="!currentGameExist">
+    Please, come back to home page and click on "WaitForGame";
+    <br> <button (click)="ComeBack()">Go back</button>
+</div>

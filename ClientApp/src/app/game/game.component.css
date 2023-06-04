@@ -1,0 +1,24 @@
+*{
+    margin: 1%;
+}
+
+#board {
+    background-color: black;
+    width: 600px;
+    height: 600px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.main-container {
+    justify-content: center;
+    display: flex;
+}
+
+.cell {
+    display: block;
+    width: 12%;
+    height: 12%;
+    margin: .25%;
+    color: white;
+}

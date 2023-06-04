@@ -8,6 +8,21 @@ builder.Services.AddDbContext<ChessDataBase>((db) => db.UseInMemoryDatabase("Che
 
 builder.Services.AddScoped<IRepository<Player>, Repository<Player>>();
 builder.Services.AddScoped<IRepository<Game>, Repository<Game>>();
+builder.Services.AddSingleton<BlockingStrategyFactory>(_ => {
+
+    BlockingStrategyFactory factory = new BlockingStrategyFactory();
+
+    factory.RegisterStrategy(PieceName.Pawn, () => new PawnIsNotBlockingStrategy());
+    factory.RegisterStrategy(PieceName.Knight, () => new KnightIsNotBlockingStrategy());
+    factory.RegisterStrategy(PieceName.Bishop, () => new BishopIsNotBlockingStrategy());
+    factory.RegisterStrategy(PieceName.Rook, () => new RookIsNotBlockingStrategy());
+    factory.RegisterStrategy(PieceName.Queen, () => new QueenIsNotBlockingStrategy());
+    factory.RegisterStrategy(PieceName.King, () => new KingIsNotBlockingStrategy());
+
+    return factory;
+});
+
+
 
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAllHeaders", 

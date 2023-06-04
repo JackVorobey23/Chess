@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { User } from 'oidc-client';
-import UserData from 'src/Interfaces/GameData';
+import UserData from 'src/Interfaces/UserData';
+import PieceDto from 'src/Interfaces/PieceDto';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,10 @@ export class SessionStorageService {
       inputText: "",
       displayLogin: "",
       playerId: -1,
-      loginExist: false
+      loginExist: false,
+      currentUserMove: false,
+      currentPieces: new Array<PieceDto>(),
+      currentUserPieceColor: ''
     };
     
     if(foundItem != null){

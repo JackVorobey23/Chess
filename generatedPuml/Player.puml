@@ -1,0 +1,12 @@
+@startuml
+class Player {
+    + PlayerId : int <<get>> <<set>>
+    + FullName : string <<get>> <<set>>
+    + Rating : int <<get>> <<set>>
+    + IsWaiting : bool <<get>> <<set>>
+    + Player(playerId:int, fullName:string, rating:int)
+}
+class "List`1"<T> {
+}
+Player --> "games<Game>" "List`1"
+@enduml

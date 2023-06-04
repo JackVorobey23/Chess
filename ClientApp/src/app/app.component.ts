@@ -21,7 +21,8 @@ export class AppComponent {
 
     this.SignalRService.askServerListener();
 
-    this.SignalRService.gameStartListener();
+    this.SignalRService.newDataListener();
+
   };
   title = 'app';
 }

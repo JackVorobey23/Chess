@@ -1,13 +1,15 @@
 class GameDto
 {
-    public int User1Id { get; set; }
-    public int User2Id { get; set; }
+    public int BPieceUserId { get; set; }
+    public int WPieceUserId { get; set; }
     public int GameId { get; set; }
+    public List<Piece> Pieces { get; set; }
 
-    public GameDto(int user1Id, int user2Id, int gameId)
+    public GameDto(int wPieceUserId, int bPieceUserId, int gameId, List<Piece> pieces)
     {
-        User1Id = user1Id;
-        User2Id = user2Id;
+        WPieceUserId = wPieceUserId;
+        BPieceUserId = bPieceUserId;
         GameId = gameId;
+        Pieces = pieces;
     }
 }

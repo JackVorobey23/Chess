@@ -1,0 +1,13 @@
+@startuml
+class Game {
+    + GameId : int <<get>> <<set>>
+    + WhitePlayerId : int <<get>> <<set>>
+    + BlackPlayerId : int <<get>> <<set>>
+    + Moves : string <<get>> <<set>>
+    + WinnerColor : PieceColor? <<get>> <<set>>
+    + Game(gameId:int, whitePlayerId:int, blackPlayerId:int, board:List<Piece>)
+}
+class "List`1"<T> {
+}
+Game --> "Board<Piece>" "List`1"
+@enduml

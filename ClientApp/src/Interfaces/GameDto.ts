@@ -1,5 +1,8 @@
+import PieceDto from "./PieceDto";
+
 export default interface GameDto {
-    User1Id: number;
-    User2Id: number;
+    WPieceUserId: number;
+    BPieceUserId: number;
     GameId: number;
+    Pieces: PieceDto[];
 }

@@ -1,0 +1,20 @@
+@startuml
+class Piece {
+    + PiecePosition : string <<get>> <<set>>
+    + Piece(pieceName:PieceName, piecePosition:string, pieceColor:PieceColor)
+}
+enum PieceName {
+    Pawn,
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+    King,
+}
+enum PieceColor {
+    White,
+    Black,
+}
+Piece --> "PieceName" PieceName
+Piece --> "PieceColor" PieceColor
+@enduml

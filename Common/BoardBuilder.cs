@@ -1,17 +1,7 @@
-class Client
-{
-    void Main()
-    {
-        BoardBuilder builder = new CommonBoardBuilder();
-        Director director = new Director(builder);
-        director.Construct();
-        Board product = builder.GetResult();
-    }
-}
-class Director
+class BoardDirector
 {
     BoardBuilder builder;
-    public Director(BoardBuilder builder)
+    public BoardDirector(BoardBuilder builder)
     {
         this.builder = builder;
     }
@@ -23,6 +13,11 @@ class Director
         builder.BuildRooks();
         builder.BuildQueens();
         builder.BuildKings();
+    }
+    public List<Piece> GetPieces() 
+    {
+        Construct();
+        return builder.GetResult().GetPieces();
     }
 }
 
@@ -52,6 +47,7 @@ class Board
     {
         return pieces.Find(p => p.PiecePosition == position);
     }
+    public List<Piece> GetPieces() => pieces;
 }
 
 class CommonBoardBuilder : BoardBuilder
@@ -65,15 +61,15 @@ class CommonBoardBuilder : BoardBuilder
         }
         for (char c = 'a'; c <= 'h'; c++)
         {
-            board.AddPiece(new Piece(PieceName.Pawn, $"{c.ToString()}7", PieceColor.White));
+            board.AddPiece(new Piece(PieceName.Pawn, $"{c.ToString()}7", PieceColor.Black));
         }
     }
     public override void BuildKnights()
     {
-        board.AddPiece(new Piece(PieceName.King, "b1", PieceColor.White));
-        board.AddPiece(new Piece(PieceName.King, "g1", PieceColor.White));
-        board.AddPiece(new Piece(PieceName.King, "b8", PieceColor.Black));
-        board.AddPiece(new Piece(PieceName.King, "g8", PieceColor.Black));
+        board.AddPiece(new Piece(PieceName.Knight, "b1", PieceColor.White));
+        board.AddPiece(new Piece(PieceName.Knight, "g1", PieceColor.White));
+        board.AddPiece(new Piece(PieceName.Knight, "b8", PieceColor.Black));
+        board.AddPiece(new Piece(PieceName.Knight, "g8", PieceColor.Black));
     }
     public override void BuildBishops()
     {

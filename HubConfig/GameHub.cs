@@ -3,13 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 class GameHub : Hub
 {
-    public GameHub(IRepository<Player> playerRepositpry, IRepository<Game> gameRepository)
+    public GameHub(IRepository<Player> playerRepositpry, IRepository<Game> gameRepository, BlockingStrategyFactory factory)
     {
         _playerRepository = playerRepositpry;
         _gameRepository = gameRepository;
+        _factory = factory;
     }
     private IRepository<Player> _playerRepository;
     private IRepository<Game> _gameRepository;
+    private BlockingStrategyFactory _factory;
     public async Task AskServer(string text)
     {
         await Clients.All.SendAsync("askResponse", "Server response: \n" + text);
@@ -24,31 +26,75 @@ class GameHub : Hub
             currentPLayer.IsWaiting = true;
             await _playerRepository.Add(currentPLayer);
         }
+        currentPLayer.IsWaiting = true;
+        await _playerRepository.Update(currentPLayer);
+
         var waiters = _playerRepository.GetAll().Result.Where(p => p.IsWaiting).ToList();
 
-        await Clients.All.SendAsync("askResponse", 
+        await Clients.All.SendAsync("askResponse",
             "Current Waiters List: " +
             string.Join("\n", waiters.Select(p => $"{p.PlayerId}: {p.FullName}")));
 
-        if(waiters.Count() == 2)
+        if (waiters.Count() == 2)
         {
-            GameDto gameDto = new GameDto(waiters[0].PlayerId, waiters[1].PlayerId, new Random().Next(1000000));
-            
-            Game newGame = new Game(gameDto.GameId, gameDto.User1Id, gameDto.User2Id);
+            List<Piece> newBoard = new BoardDirector(new CommonBoardBuilder()).GetPieces();
+
+            GameDto gameDto = new GameDto(waiters[0].PlayerId, waiters[1].PlayerId,
+                new Random().Next(1000000), newBoard);
+
+            Game newGame = new Game(gameDto.GameId, gameDto.BPieceUserId, gameDto.WPieceUserId);
+            newGame.Board = newBoard;
             
             await _gameRepository.Add(newGame);
 
             await AskServer("congratulations!");
-            
-            await Clients.All.SendAsync("gameStartListener", 
+
+            await Clients.All.SendAsync("gameStart",
             JsonSerializer.Serialize(gameDto));
 
             _playerRepository.GetAll().Result.Where(p => p.IsWaiting)
-            .ToList().ForEach(async p => {
+            .ToList()
+            .ForEach(async p =>
+            {
                 Player playerIsntWaiting = await _playerRepository.FindById(p.PlayerId);
                 playerIsntWaiting.IsWaiting = false;
                 await _playerRepository.Update(playerIsntWaiting);
             });
         }
+    }
+    public async Task MakeMove(int gameId, string Move)
+    {
+
+        List<Piece> board = (await _gameRepository.FindById(gameId)).Board;
+
+        MoveAllowed moveAllowed = new MoveAllowed(_factory, board);
+        
+
+        await Clients.All.SendAsync("newMove",
+            JsonSerializer.Serialize(new MoveDto(gameId, Move)));
+    }
+    public async Task EndGame(int gameId, int LoserId)
+    {
+        Game endedGame = await _gameRepository.FindById(gameId);
+
+        if (endedGame == null)
+        {
+            System.Console.WriteLine("Request with incorrect game id.");
+            return;
+        }
+        if (endedGame.WhitePlayerId == LoserId)
+        {
+            endedGame.WinnerColor = PieceColor.Black;
+        }
+        else
+        {
+            endedGame.WinnerColor = PieceColor.White;
+        }
+
+        endedGame.WinnerColor = LoserId == -1 ? null : endedGame.WinnerColor;
+
+        await Clients.All.SendAsync("gameEnd", gameId);
+
+        await _gameRepository.Update(endedGame);
     }
 }
