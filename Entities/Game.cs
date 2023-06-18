@@ -6,12 +6,13 @@ public class Game
     public int WhitePlayerId { get; set; }
     public int BlackPlayerId { get; set; }
     public string Moves { get; set; }
-    public List<Piece> Board;
+    public string Board { get; set; }
     public PieceColor? WinnerColor { get; set; }
-    public Game(int gameId, int whitePlayerId, int blackPlayerId)
+    public Game(int gameId, int whitePlayerId, int blackPlayerId, string board)
     {
         GameId = gameId;
         WhitePlayerId = whitePlayerId;
         BlackPlayerId = blackPlayerId;
+        Board = board;
     }
 }

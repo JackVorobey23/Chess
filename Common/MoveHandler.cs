@@ -40,10 +40,19 @@ public class BlockingPieceHandler : MoveHandler
     {
         if (_factory[piece.PieceName].PieceIsNotBlocking(piece, move, _board))
         {
-            return _nextHandler.HandleMove(piece, move);
+            if (_nextHandler != null)
+            {
+                return _nextHandler.HandleMove(piece, move);
+            }
+            else
+            {
+                System.Console.WriteLine("Piece is not blocking.");
+                return true;
+            }
         }
         else
         {
+            System.Console.WriteLine("Piece is blocking.");
             return false;
         }
     }
@@ -55,19 +64,30 @@ public class BlockingPieceHandler : MoveHandler
 }
 public class KingSafetyHandler : MoveHandler
 {
+    private BlockingStrategyFactory _factory;
     private ChecksCollection _collection;
-    public KingSafetyHandler(List<Piece> board, ChecksCollection collection) : base(board)
+    public KingSafetyHandler(List<Piece> board, BlockingStrategyFactory factory) : base(board)
     {
-        _collection = collection;
+        _factory = factory;
     }
     public override bool HandleMove(Piece piece, string move)
     {
+        List<Piece> tempBoard = _board;
+
+        tempBoard.Remove(piece);
+        piece.PiecePosition = move;
+        tempBoard.Add(piece);
+
+        _collection = new ChecksCollection();
+
         using (var a = _collection.GetEnumerator())
         {
             while (a.MoveNext())
             {
-                if (a.Current.Invoke(_board, piece.PieceColor) is not null)
+                var checker = a.Current.Invoke(tempBoard, piece.PieceColor, _factory);
+                if (checker is not null)
                 {
+                    System.Console.WriteLine($"King is under a check. {checker.PieceName} {checker.PiecePosition}");
                     return false;
                 }
             }
@@ -78,7 +98,8 @@ public class KingSafetyHandler : MoveHandler
         }
         else
         {
-            return false;
+            System.Console.WriteLine("King is safe.");
+            return true;
         }
     }
 

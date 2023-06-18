@@ -1,5 +1,0 @@
-@startuml
-!include .\\Game.puml
-!include .\\Piece.puml
-!include .\\Player.puml
-@enduml

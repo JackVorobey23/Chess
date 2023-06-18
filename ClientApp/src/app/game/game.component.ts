@@ -64,7 +64,7 @@ export class GameComponent implements OnInit, OnDestroy {
           this.currentUserMove = true;
         }
 
-        this.visualizeMove(data.Move);
+        this.visualizeMove(data.Pieces);
       }
     })
 
@@ -97,38 +97,24 @@ export class GameComponent implements OnInit, OnDestroy {
     this.myMoveDataSubscription.unsubscribe();
   }
 
-  visualizeMove(move: string) {
-    let parsedMove: string[] = move.split('-');
-    console.log(parsedMove);
+  visualizeMove(pieces: PieceDto[]) {
 
-    let tempPiece = this.sessionStorageService
-      .getUserData().currentPieces
-      .find(p => p.PiecePosition == parsedMove[0]);
 
-      if (tempPiece == undefined) {
-        console.log("move is not possible!");
-        return;
-      }
-      else {
-        this.userData.currentPieces = this.userData.currentPieces.filter(p => p.PiecePosition != parsedMove[0])
-  
-        let movedPiece: PieceDto = {
-          PieceColor: tempPiece.PieceColor,
-          PieceName: tempPiece.PieceName,
-          PiecePosition: parsedMove[1]
-        }
-  
-        this.userData.currentPieces.push(movedPiece)
-  
-        this.sessionStorageService.setUserData(this.userData);
-        let reload = this.cycleForBoard;
-        this.cycleForBoard = [];
-        setTimeout(() => this.cycleForBoard = reload);
-      }
+    this.userData.currentPieces = pieces;
+
+    this.sessionStorageService.setUserData(this.userData);
+    
+    let reload = this.cycleForBoard;
+    this.cycleForBoard = [];
+    setTimeout(() => this.cycleForBoard = reload);
   }
 
   makeMove(newMove: string) {
-
+    this.userData = this.sessionStorageService.getUserData();
+    if(newMove.includes("O-O"))
+    {
+      this.SignalRService.makeMove(this.userData.currentGameId, this.userData.currentUserPieceColor[0] + newMove);
+    }
     this.SignalRService.makeMove(this.userData.currentGameId, newMove);
   }
   

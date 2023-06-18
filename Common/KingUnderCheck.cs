@@ -13,7 +13,7 @@ class KingUnderCheck
 
         bool onlyKingMoves = false;
 
-        if(_checks.Count > 1 || _checks.Exists(p => p.PieceName == PieceName.Knight)) 
+        if (_checks.Count > 1 || _checks.Exists(p => p.PieceName == PieceName.Knight))
         {
             onlyKingMoves = true;
         }
@@ -23,13 +23,13 @@ class KingUnderCheck
 
     private void CalculateKingsMove()
     {
-        
+
     }
     private void CalculateAllMoves(Piece checker, Piece king)
     {
-        if(checker.PieceName == PieceName.Bishop) 
+        if (checker.PieceName == PieceName.Bishop)
         {
-            
+
         }
     }
 }

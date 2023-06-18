@@ -22,5 +22,5 @@ public class BlockingStrategyFactory
     {
         strategies[pieceName] = createMethod;
     }
-    
+
 }

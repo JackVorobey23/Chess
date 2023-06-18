@@ -6,18 +6,15 @@ class GameHub : Hub
     public GameHub
         (IRepository<Player> playerRepositpry,
         IRepository<Game> gameRepository,
-        BlockingStrategyFactory factory,
-        ChecksCollection checksCollection)
+        BlockingStrategyFactory factory)
     {
         _playerRepository = playerRepositpry;
         _gameRepository = gameRepository;
         _factory = factory;
-        _checksCollection = checksCollection;
     }
     private IRepository<Player> _playerRepository;
     private IRepository<Game> _gameRepository;
     private BlockingStrategyFactory _factory;
-    private ChecksCollection _checksCollection;
     public async Task AskServer(string text)
     {
         await Clients.All.SendAsync("askResponse", "Server response: \n" + text);
@@ -43,16 +40,15 @@ class GameHub : Hub
 
         if (waiters.Count() == 2)
         {
-            List<Piece> newBoard = new BoardDirector(new CommonBoardBuilder()).GetPieces();
+            List<Piece> newBoard = new BoardDirector(new CommonBoardBuilder()).GetBoard();
 
             GameDto gameDto = new GameDto(waiters[0].PlayerId, waiters[1].PlayerId,
                 new Random().Next(1000000), newBoard);
 
-            Game newGame = new Game(gameDto.GameId, gameDto.BPieceUserId, gameDto.WPieceUserId);
-            newGame.Board = newBoard;
+            Game newGame = new Game(gameDto.GameId, gameDto.BPieceUserId, gameDto.WPieceUserId, JsonSerializer.Serialize(newBoard));
 
             await _gameRepository.Add(newGame);
-
+            
             await AskServer("congratulations!");
 
             await Clients.All.SendAsync("gameStart",
@@ -70,20 +66,65 @@ class GameHub : Hub
     }
     public async Task MakeMove(int gameId, string Move)
     {
+        bool moveAllowed = false;
+        var game = await _gameRepository.FindById(gameId);
+        Piece movingPiece = new Piece(PieceName.Pawn, "e2", PieceColor.Black);
+        List<Piece> board = JsonSerializer.Deserialize<List<Piece>>(game.Board);
+        if(Move.Contains('O'))
+        {
+            var castlingWorker = new CastlingWorker(board, Move, game.Moves);
+            moveAllowed = castlingWorker.CastleIsPossible();
+            if(moveAllowed)
+            {
+                board = castlingWorker.MakeCastle();
+            }
+        }
+        else
+        {
+            movingPiece = board.Find(p => p.PiecePosition == Move.Split('-')[0]);
+            if(movingPiece == null)
+            {
+                await Clients.All.SendAsync("moveWrong", gameId);
+                return;
+            }
+            string moveTo = Move.Split('-')[1];
 
-        List<Piece> board = (await _gameRepository.FindById(gameId)).Board;
+            moveAllowed = new MoveAllowed(board, _factory)
+                .MoveAllowedRequest(movingPiece, moveTo);
+            if(moveAllowed)
+            {
+                foreach (var a in board)
+                {
+                    System.Console.WriteLine(a.PieceName + " - " + a.PiecePosition);
+                }
+            }
+        }
 
-        Piece movingPiece = board.Find(p => p.PiecePosition == Move.Split('-')[0]);
-        string moveTo = Move.Split('-')[1];
-
-        bool moveAllowed = new MoveAllowed(board, _factory, 
-            new ChecksCollection(board, movingPiece.PieceColor == PieceColor.White ? PieceColor.Black : PieceColor.White))
-            .MoveAllowedRequest(movingPiece, moveTo);
 
         if (moveAllowed)
-        {
+        {   
+            var samePosPieces = board.GroupBy(p => p.PiecePosition).Where(g => g.Count() >= 2);
+
+            foreach (var samePieceGroup in samePosPieces)
+            {
+                foreach (var samePiece in samePieceGroup)
+                {
+                    if(samePiece.PieceColor != movingPiece.PieceColor)
+                    {
+                        board.Remove(samePiece);
+                    }
+                }
+            }
+
+            game.Board = JsonSerializer.Serialize(board);
+            game.Moves += $"{Move}; ";
+            
+            await _gameRepository.Update(game);
+
+            System.Console.WriteLine((await _gameRepository.FindById(gameId)).Moves);
+            
             await Clients.All.SendAsync("newMove",
-                JsonSerializer.Serialize(new MoveDto(gameId, Move)));
+                JsonSerializer.Serialize(new MoveDto(gameId, board)));
         }
         else
         {
@@ -111,7 +152,5 @@ class GameHub : Hub
         endedGame.WinnerColor = LoserId == -1 ? null : endedGame.WinnerColor;
 
         await Clients.All.SendAsync("gameEnd", gameId);
-
-        await _gameRepository.Update(endedGame);
     }
 }

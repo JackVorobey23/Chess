@@ -2,7 +2,7 @@ public class Player
 {
     public int PlayerId { get; set; }
     public string FullName { get; set; }
-    public List<Game> games { get; set; }
+    public List<Game> Games { get; set; }
     public int Rating { get; set; }
     public bool IsWaiting { get; set; }
 
@@ -10,8 +10,8 @@ public class Player
     {
         PlayerId = playerId;
         FullName = fullName;
-        this.games = new List<Game>();
         Rating = rating;
         IsWaiting = false;
+        Games = new List<Game>();
     }
 }

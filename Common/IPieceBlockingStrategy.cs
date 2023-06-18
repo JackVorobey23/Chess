@@ -16,19 +16,28 @@ public class PawnIsNotBlockingStrategy : IPieceBlockingStrategy
         }
         else
         {
-            var condition = (int i) => true;
-
-            condition = piece.PiecePosition[1] < move[1] ? (i) => i <= move[1] : (i) => i >= move[1];
-
-            for (int i = piece.PiecePosition[1] + 1; condition(i); i++)
+            if (piece.PieceColor == PieceColor.White)
             {
-                if (board.Find(p => p.PiecePosition[1] == i) is not null)
+                for (int i = piece.PiecePosition[1] + 1; i <= move[1]; i++)
                 {
-                    return false;
+                    if (board.Find(p => p.PiecePosition[1] == i && p.PiecePosition[0] == piece.PiecePosition[0]) is not null)
+                    {
+                        return false;
+                    }
                 }
             }
-            return true;
+            else
+            {
+                for (int i = piece.PiecePosition[1] - 1; i >= move[1]; i--)
+                {
+                    if (board.Find(p => p.PiecePosition[1] == i && p.PiecePosition[0] == piece.PiecePosition[0]) is not null)
+                    {
+                        return false;
+                    }
+                }
+            }
         }
+        return true;
     }
 }
 public class KnightIsNotBlockingStrategy : IPieceBlockingStrategy
@@ -46,71 +55,79 @@ public class RookIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
-        var condition = (int i) => true;
+        int startPoint = piece.PiecePosition[0];
+        var sycleCond = (int i) => (i < piece.PiecePosition[0], i);
 
-        if (piece.PiecePosition[1] != move[1])
+        if (move[0] == piece.PiecePosition[0])
         {
-            condition = piece.PiecePosition[1] < move[1] ? (i) => i <= move[1] : (i) => i >= move[1];
-
-            for (int i = piece.PiecePosition[1] + 1; condition(i); i++)
+            if (move[1] > piece.PiecePosition[1])
             {
-                Piece blockingPiece = board.Find(p => p.PiecePosition[1] == i);
-                if (board.Find(p => p.PiecePosition[1] == i) is not null)
-                {
-                    if (i == move[1] && blockingPiece.PieceColor != piece.PieceColor)
-                    {
-                        return true;
-                    }
-                    return false;
-                }
+                sycleCond = (i) => (i <= move[1], 1);
+                startPoint = piece.PiecePosition[1] + 1;
+            }
+            else
+            {
+                sycleCond = (i) => (i >= move[1], -1);
+                startPoint = piece.PiecePosition[1] - 1;
             }
         }
         else
         {
-            condition = piece.PiecePosition[0] < move[0] ? (i) => i <= move[0] : (i) => i >= move[0];
-
-            for (int i = piece.PiecePosition[0] + 1; condition(i); i++)
+            if (move[0] > piece.PiecePosition[0])
             {
-                Piece blockingPiece = board.Find(p => p.PiecePosition[0] == i);
-
-                if (blockingPiece is not null)
+                sycleCond = (i) => (i <= move[0], 1);
+                startPoint = piece.PiecePosition[0] + 1;
+            }
+            else
+            {
+                sycleCond = (i) => (i >= move[0], -1);
+                startPoint = piece.PiecePosition[0] - 1;
+            }
+        }
+        for (int i = startPoint; sycleCond.Invoke(i).Item1; i += sycleCond(i).Item2)
+        {
+            Piece blockingPiece = new Piece(PieceName.Pawn, "", PieceColor.White);
+            if (move[0] == piece.PiecePosition[0])
+            {
+                blockingPiece = board.Find(p => p.PiecePosition == $"{(char)piece.PiecePosition[0]}{(char)(i)}");
+            }
+            else
+            {
+                blockingPiece = board.Find(p => p.PiecePosition == $"{(char)(i)}{(char)piece.PiecePosition[1]}");
+            }
+            if (blockingPiece is not null)
+            {
+                if (blockingPiece.PiecePosition == move && piece.PieceColor != blockingPiece.PieceColor)
                 {
-                    if (i == move[0] && blockingPiece.PieceColor != piece.PieceColor)
-                    {
-                        return true;
-                    }
-                    return false;
+                    continue;
                 }
+                return false;
             }
         }
         return true;
+
     }
 }
 public class BishopIsNotBlockingStrategy : IPieceBlockingStrategy
 {
     public bool PieceIsNotBlocking(Piece piece, string move, List<Piece> board)
     {
-        var conditionI = (int i) => true;
-        var conditionJ = (int j) => true;
-
-        conditionI = piece.PiecePosition[0] < move[0] ? (i) => i <= move[0] : (i) => i >= move[0];
-
-        conditionJ = piece.PiecePosition[1] < move[1] ? (j) => j <= move[1] : (j) => j >= move[1];
-
-        for (int i = piece.PiecePosition[0] + 1; conditionI(i); i++)
+        for (int i = 1; i <= Math.Abs(move[0] - piece.PiecePosition[0]); i++)
         {
-            for (int j = piece.PiecePosition[1] + 1; conditionJ(j); j++)
-            {
-                Piece blockingPiece = board.Find(p => p.PiecePosition[0] == i && p.PiecePosition[1] == j);
+            int k = move[0] < piece.PiecePosition[0] ? -1 : 1;
+            int n = move[1] < piece.PiecePosition[1] ? -1 : 1;
 
-                if (blockingPiece is not null)
+            int hc = piece.PiecePosition[0] + k * i;
+            int vc = piece.PiecePosition[1] + n * i;
+            Piece blockingPiece = board.Find(p => p.PiecePosition[0] == (char)hc && p.PiecePosition[1] == (char)vc);
+
+            if (blockingPiece is not null)
+            {
+                if (blockingPiece.PiecePosition == move && piece.PieceColor != blockingPiece.PieceColor)
                 {
-                    if (blockingPiece.PiecePosition == move && piece.PieceColor != blockingPiece.PieceColor)
-                    {
-                        continue;
-                    }
-                    return false;
+                    continue;
                 }
+                return false;
             }
         }
         return true;
@@ -124,7 +141,7 @@ public class QueenIsNotBlockingStrategy : IPieceBlockingStrategy
         {
             return new BishopIsNotBlockingStrategy().PieceIsNotBlocking(piece, move, board);
         }
-        else 
+        else
         {
             return new RookIsNotBlockingStrategy().PieceIsNotBlocking(piece, move, board);
         }
